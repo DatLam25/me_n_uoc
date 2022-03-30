@@ -49,6 +49,7 @@ class _ChatPageState extends State<ChatPage> {
       ),
       body: Column(
         children: <Widget>[
+          const SizedBox(height: 20),
           Expanded(
               child: ListView(
             children: <Widget>[

@@ -7,6 +7,7 @@ part 'homepage.dart';
 part 'login.dart';
 part 'register.dart';
 part 'chat.dart';
+part 'detailedPost.dart';
 
 void main() {
   runApp(const MyApp());
