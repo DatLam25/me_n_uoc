@@ -29,7 +29,6 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               const SizedBox(height: 20),
               const TextField(
-
                   decoration: InputDecoration(
                 hintText: "Username",
                 border: OutlineInputBorder(),

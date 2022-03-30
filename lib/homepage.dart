@@ -109,7 +109,9 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {}, //To Chat Page
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatPage()));
+        }, //To Chat Page
         tooltip: 'Open Chat',
         child: const Icon(Icons.chat),
         backgroundColor: Colors.pink.shade200,

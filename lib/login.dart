@@ -13,10 +13,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            icon: SvgPicture.asset(
-              logoAsset,
-              semanticsLabel: "Me&UofC",
-            ),
+            icon: const Icon(Icons.arrow_back),
             onPressed: () {
               Navigator.pop(context);
             }, //To Home Page
