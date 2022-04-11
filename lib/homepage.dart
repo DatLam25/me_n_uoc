@@ -7,11 +7,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class Post {
-  String title;
-  String content;
-  Post(this.title, this.content);
-}
+
 
 class _HomePageState extends State<HomePage> {
   static const _pageSize = 10;
@@ -26,7 +22,7 @@ class _HomePageState extends State<HomePage> {
     List<Post> newData = pageKey >= 100
         ? []
         : List.generate(
-            10, (index) => Post("Title ${index + pageKey}", loremIpsum));
+            _pageSize, (index) => Post("Title ${index + pageKey}", loremIpsum, index+pageKey, "Creater ${index + pageKey}"));
 
     final isLastPage = newData.length < _pageSize;
     if(isLastPage) {

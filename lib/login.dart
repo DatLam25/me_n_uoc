@@ -7,6 +7,7 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
+
 class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
@@ -52,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
                         backgroundColor: Colors.black,
                         fixedSize: Size.infinite),
                     onPressed: () {
-                      Navigator.pop(context);
+                          //TODO: Add Login API Call
                     },
                     child: const Text(
                       "Submit",
@@ -68,7 +69,7 @@ class _LoginPageState extends State<LoginPage> {
                   },
                   child: const Text(
                     "Don't have an account? Register here",
-                    style: TextStyle(fontSize: 10, color: Colors.black),
+                    style: TextStyle(fontSize: 15, color: Colors.black),
                   )),
             ],
           ),

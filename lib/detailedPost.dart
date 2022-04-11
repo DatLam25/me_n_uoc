@@ -1,10 +1,10 @@
 part of menuoc;
 
 class DetailedPost extends StatelessWidget {
-  DetailedPost(this.index, this.item);
+  const DetailedPost(this.index, this.item, {Key? key}) : super(key: key);
 
   final int index;
-  Post item;
+  final Post item;
   @override
   Widget build(BuildContext context) {
     return Scaffold(

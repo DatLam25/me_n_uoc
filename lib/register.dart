@@ -56,7 +56,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         backgroundColor: Colors.black,
                         fixedSize: Size.infinite),
                     onPressed: () {
-                      Navigator.pop(context);
+                      //TODO: Add register API Call
                     },
                     child: const Text(
                       "Submit",
