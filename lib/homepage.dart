@@ -20,7 +20,7 @@ class _HomePageState extends State<HomePage> {
 
   final PagingController<int, Post> _pagingController = PagingController(firstPageKey: 0);
 
-  Future<void> mockFetch(int pageKey) async {
+  Future<void> _pageFetch(int pageKey) async {
     await Future.delayed(const Duration(milliseconds: 1000));
     //Mock fetch Logic
     List<Post> newData = pageKey >= 100
@@ -74,7 +74,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _pagingController.addPageRequestListener((pageKey) {
-      mockFetch(pageKey);
+      _pageFetch(pageKey);
     });
   }
 
@@ -130,8 +130,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          PagedSliverList<int, Post>.separated(
-              separatorBuilder: (context, index) => const Divider(height: 10),
+          PagedSliverList<int, Post>(
               pagingController: _pagingController,
               builderDelegate: PagedChildBuilderDelegate<Post>(
             itemBuilder: (BuildContext context, Post item, int index) {
@@ -171,7 +170,7 @@ class _HomePageState extends State<HomePage> {
                             onTap: () {
                               Navigator.push(context,
                                   MaterialPageRoute(builder: (context) {
-                                return DetailedPost(index);
+                                return DetailedPost(index, item);
                               }));
                             }, //Go to the Specific Post Page
                           )))

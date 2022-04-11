@@ -1,15 +1,16 @@
 part of menuoc;
 
 class DetailedPost extends StatelessWidget {
-  DetailedPost(this.index);
+  DetailedPost(this.index, this.item);
 
   final int index;
+  Post item;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text("Title"),
+        title: Text(item.title),
       ),
       body: Column(
             children: <Widget>[
@@ -20,8 +21,8 @@ class DetailedPost extends StatelessWidget {
                           padding: const EdgeInsets.all(5),
                           color: Colors.pink[50],
                           alignment: Alignment.topLeft,
-                          child: const Text(
-                            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Cursus vitae congue mauris rhoncus aenean vel elit scelerisque. Risus feugiat in ante metus dictum at. Sed euismod nisi porta lorem. Ullamcorper sit amet risus nullam eget felis eget. Vel quam elementum pulvinar etiam non quam. Blandit turpis cursus in hac. Volutpat blandit aliquam etiam erat velit scelerisque in dictum. Neque sodales ut etiam sit. Ultricies integer quis auctor elit sed.",
+                          child: Text(
+                            item.content,
                             style: TextStyle(fontSize: 25),
                           ),
                         ),
