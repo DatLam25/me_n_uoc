@@ -39,6 +39,37 @@ class _HomePageState extends State<HomePage> {
 
   }
 
+  Color randomColor(index){
+    if(index%7 ==0)
+    {
+      return Colors.white30;
+    }
+    else if(index%6 == 0)
+      {
+        return Colors.lightGreenAccent;
+      }
+    else if(index%5 == 0)
+    {
+      return Colors.purpleAccent;
+    }
+    else if(index%4 == 0)
+    {
+      return Colors.greenAccent;
+    }
+    else if(index%3 == 0)
+    {
+      return Colors.cyanAccent;
+    }
+    else if(index%2 == 0)
+    {
+      return Colors.tealAccent;
+    }
+    else
+    {
+      return Colors.orangeAccent;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -99,7 +130,8 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          PagedSliverList<int, Post>(
+          PagedSliverList<int, Post>.separated(
+              separatorBuilder: (context, index) => const Divider(height: 10),
               pagingController: _pagingController,
               builderDelegate: PagedChildBuilderDelegate<Post>(
             itemBuilder: (BuildContext context, Post item, int index) {
@@ -107,11 +139,11 @@ class _HomePageState extends State<HomePage> {
                 children: <Widget>[
                   Card(
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                      //mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         Container(
                           padding: const EdgeInsets.all(5),
-                          color: Colors.pink[50],
+                          color: randomColor(index),
                           height: 35.0,
                           alignment: Alignment.topLeft,
                           child: Text(
@@ -121,7 +153,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                         Container(
                           padding: const EdgeInsets.all(5),
-                          color: Colors.pink[50],
+                          color: randomColor(index),
                           height: 140.0,
                           alignment: Alignment.topLeft,
                           child: Text(
