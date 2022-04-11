@@ -14,57 +14,49 @@ class Post {
 }
 
 class _HomePageState extends State<HomePage> {
-  final ScrollController _scrollController = ScrollController();
-  List<Post> posts = [];
-  bool loading = false, allLoaded = false;
-
+  static const _pageSize = 10;
   String loremIpsum =
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Cursus vitae congue mauris rhoncus aenean vel elit scelerisque. Risus feugiat in ante metus dictum at. Sed euismod nisi porta lorem. Ullamcorper sit amet risus nullam eget felis eget. Vel quam elementum pulvinar etiam non quam. Blandit turpis cursus in hac. Volutpat blandit aliquam etiam erat velit scelerisque in dictum. Neque sodales ut etiam sit. Ultricies integer quis auctor elit sed.";
 
-  mockFetch() async {
-    if (allLoaded) {
-      return;
-    }
-    setState(() {
-      loading = true;
-    });
-    await Future.delayed(const Duration(milliseconds: 500));
-    List<Post> newData = posts.length >= 60
+  final PagingController<int, Post> _pagingController = PagingController(firstPageKey: 0);
+
+  Future<void> mockFetch(int pageKey) async {
+    await Future.delayed(const Duration(milliseconds: 1000));
+    //Mock fetch Logic
+    List<Post> newData = pageKey >= 100
         ? []
         : List.generate(
-            10, (index) => Post("Title ${index + posts.length}", loremIpsum));
-    if (newData.isNotEmpty) {
-      posts.addAll(newData);
+            10, (index) => Post("Title ${index + pageKey}", loremIpsum));
+
+    final isLastPage = newData.length < _pageSize;
+    if(isLastPage) {
+      _pagingController.appendLastPage(newData);
     }
-    setState(() {
-      loading = false;
-      allLoaded = newData.isEmpty;
-    });
+    else {
+      final nextPageKey = pageKey + newData.length;
+      _pagingController.appendPage(newData, nextPageKey);
+    }
+
   }
 
   @override
   void initState() {
     super.initState();
-    mockFetch();
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent && !loading) {
-        mockFetch();
-      }
+    _pagingController.addPageRequestListener((pageKey) {
+      mockFetch(pageKey);
     });
   }
 
   @override
   void dispose() {
+    _pagingController.dispose();
     super.dispose();
-    _scrollController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: CustomScrollView(
-        controller: _scrollController,
         slivers: <Widget>[
           SliverAppBar(
             leading: IconButton(
@@ -107,10 +99,10 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-          SliverList(
-              //itemExtent: 200.0,
-              delegate: SliverChildBuilderDelegate(
-            (BuildContext context, int index) {
+          PagedSliverList<int, Post>(
+              pagingController: _pagingController,
+              builderDelegate: PagedChildBuilderDelegate<Post>(
+            itemBuilder: (BuildContext context, Post item, int index) {
               return Stack(
                 children: <Widget>[
                   Card(
@@ -123,7 +115,7 @@ class _HomePageState extends State<HomePage> {
                           height: 35.0,
                           alignment: Alignment.topLeft,
                           child: Text(
-                            posts[index].title,
+                            item.title,
                             style: TextStyle(fontSize: 25),
                           ),
                         ),
@@ -133,7 +125,7 @@ class _HomePageState extends State<HomePage> {
                           height: 140.0,
                           alignment: Alignment.topLeft,
                           child: Text(
-                            posts[index].content,
+                            item.content,
                             style: TextStyle(fontSize: 25),
                           ),
                         ),
@@ -154,7 +146,6 @@ class _HomePageState extends State<HomePage> {
                 ],
               );
             },
-            childCount: posts.length,
           ))
         ],
       ),
