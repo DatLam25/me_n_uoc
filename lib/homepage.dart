@@ -7,15 +7,65 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+class Post {
+  String title;
+  String content;
+  Post(this.title, this.content);
+}
+
 class _HomePageState extends State<HomePage> {
+  final ScrollController _scrollController = ScrollController();
+  List<Post> posts = [];
+  bool loading = false, allLoaded = false;
+
+  String loremIpsum =
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Cursus vitae congue mauris rhoncus aenean vel elit scelerisque. Risus feugiat in ante metus dictum at. Sed euismod nisi porta lorem. Ullamcorper sit amet risus nullam eget felis eget. Vel quam elementum pulvinar etiam non quam. Blandit turpis cursus in hac. Volutpat blandit aliquam etiam erat velit scelerisque in dictum. Neque sodales ut etiam sit. Ultricies integer quis auctor elit sed.";
+
+  mockFetch() async {
+    if (allLoaded) {
+      return;
+    }
+    setState(() {
+      loading = true;
+    });
+    await Future.delayed(const Duration(milliseconds: 500));
+    List<Post> newData = posts.length >= 60
+        ? []
+        : List.generate(
+            10, (index) => Post("Title ${index + posts.length}", loremIpsum));
+    if (newData.isNotEmpty) {
+      posts.addAll(newData);
+    }
+    setState(() {
+      loading = false;
+      allLoaded = newData.isEmpty;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    mockFetch();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent && !loading) {
+        mockFetch();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _scrollController.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    const loremIpsum =
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Cursus vitae congue mauris rhoncus aenean vel elit scelerisque. Risus feugiat in ante metus dictum at. Sed euismod nisi porta lorem. Ullamcorper sit amet risus nullam eget felis eget. Vel quam elementum pulvinar etiam non quam. Blandit turpis cursus in hac. Volutpat blandit aliquam etiam erat velit scelerisque in dictum. Neque sodales ut etiam sit. Ultricies integer quis auctor elit sed.";
-
     return Scaffold(
       body: CustomScrollView(
-        slivers: [
+        controller: _scrollController,
+        slivers: <Widget>[
           SliverAppBar(
             leading: IconButton(
               icon: SvgPicture.asset(
@@ -64,31 +114,31 @@ class _HomePageState extends State<HomePage> {
               return Stack(
                 children: <Widget>[
                   Card(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Container(
-                            padding: const EdgeInsets.all(5),
-                            color: Colors.pink[50],
-                            height: 35.0,
-                            alignment: Alignment.topLeft,
-                            child: const Text(
-                              'Title',
-                              style: TextStyle(fontSize: 25),
-                            ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Container(
+                          padding: const EdgeInsets.all(5),
+                          color: Colors.pink[50],
+                          height: 35.0,
+                          alignment: Alignment.topLeft,
+                          child: Text(
+                            posts[index].title,
+                            style: TextStyle(fontSize: 25),
                           ),
-                          Container(
-                            padding: const EdgeInsets.all(5),
-                            color: Colors.pink[50],
-                            height: 140.0,
-                            alignment: Alignment.topLeft,
-                            child: const Text(
-                              loremIpsum,
-                              style: TextStyle(fontSize: 25),
-                            ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(5),
+                          color: Colors.pink[50],
+                          height: 140.0,
+                          alignment: Alignment.topLeft,
+                          child: Text(
+                            posts[index].content,
+                            style: TextStyle(fontSize: 25),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
+                    ),
                   ),
                   Positioned.fill(
                       child: Material(
@@ -104,7 +154,7 @@ class _HomePageState extends State<HomePage> {
                 ],
               );
             },
-            childCount: 20,
+            childCount: posts.length,
           ))
         ],
       ),
