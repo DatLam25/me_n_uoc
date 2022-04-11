@@ -103,13 +103,13 @@ class _HomePageState extends State<HomePage> {
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.login),
+                icon:  globals.isLoggedIn ? const Icon(Icons.account_circle) : const Icon(Icons.login),
                 color: Colors.pinkAccent,
                 onPressed: () {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const LoginPage()));
+                          builder: (context) => const LoginPage())).then((_) => setState(() {}));
                 }, //To Login
               )
             ],

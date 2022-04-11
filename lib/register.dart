@@ -8,6 +8,18 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final usernameController = TextEditingController();
+  final passWordController = TextEditingController();
+  final emailController = TextEditingController();
+
+  @override
+  void dispose() {
+    usernameController.dispose();
+    passWordController.dispose();
+    emailController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,23 +40,25 @@ class _RegisterPageState extends State<RegisterPage> {
                 style: TextStyle(fontSize: 40, color: Colors.pink),
               ),
               const SizedBox(height: 20),
-              const TextField(
-                  decoration: InputDecoration(
+              TextField(
+                  controller: usernameController,
+                  decoration: const InputDecoration(
                 hintText: "Username",
                 border: OutlineInputBorder(),
               )),
               const SizedBox(height: 10),
-              const TextField(
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    hintText: "Password",
-                    border: OutlineInputBorder(),
-                  )),
+              TextField(
+                  controller: emailController,
+                  decoration: const InputDecoration(
+                hintText: "Email",
+                border: OutlineInputBorder(),
+              )),
               const SizedBox(height: 10),
-              const TextField(
+              TextField(
+                  controller: passWordController,
                   obscureText: true,
-                  decoration: InputDecoration(
-                    hintText: "Password confirm",
+                  decoration: const InputDecoration(
+                    hintText: "Password",
                     border: OutlineInputBorder(),
                   )),
               const SizedBox(height: 20),
@@ -57,6 +71,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         fixedSize: Size.infinite),
                     onPressed: () {
                       //TODO: Add register API Call
+                      Navigator.pop(context);
                     },
                     child: const Text(
                       "Submit",

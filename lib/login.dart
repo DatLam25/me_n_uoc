@@ -9,6 +9,16 @@ class LoginPage extends StatefulWidget {
 
 
 class _LoginPageState extends State<LoginPage> {
+  final usernameController = TextEditingController();
+  final passWordController = TextEditingController();
+
+  @override
+  void dispose() {
+    usernameController.dispose();
+    passWordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,15 +42,17 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              const TextField(
-                  decoration: InputDecoration(
+              TextField(
+                  controller: usernameController,
+                  decoration: const InputDecoration(
                 hintText: "Username",
                 border: OutlineInputBorder(),
               )),
               const SizedBox(height: 10),
-              const TextField(
+              TextField(
+                  controller: passWordController,
                   obscureText: true,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText: "Password",
                     border: OutlineInputBorder(),
                   )),
@@ -54,6 +66,10 @@ class _LoginPageState extends State<LoginPage> {
                         fixedSize: Size.infinite),
                     onPressed: () {
                           //TODO: Add Login API Call
+                          setState(() {
+                            globals.isLoggedIn = true;
+                          });
+                          Navigator.pop(context);
                     },
                     child: const Text(
                       "Submit",
