@@ -1,6 +1,7 @@
 library menuoc;
 
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -15,6 +16,8 @@ part 'register.dart';
 part 'chat.dart';
 part 'detailed_post.dart';
 part 'profile.dart';
+part 'admin_login.dart';
+part 'admin_page.dart';
 
 const storage =  FlutterSecureStorage();
 Session session = Session();
@@ -71,6 +74,14 @@ class Comment{
   Comment(this.text, this.user, this.commentId);
 }
 
+class Profile{
+  String tag;
+  String bio;
+
+  Profile(this.tag, this.bio);
+}
+
+
 class Session {
   Map<String, String> headers = {};
 
@@ -96,4 +107,20 @@ class Session {
   }
 }
 
-
+Color randomColor(index) {
+  if (index % 7 == 0) {
+    return Colors.white30;
+  } else if (index % 6 == 0) {
+    return Colors.lightGreenAccent;
+  } else if (index % 5 == 0) {
+    return Colors.purpleAccent;
+  } else if (index % 4 == 0) {
+    return Colors.greenAccent;
+  } else if (index % 3 == 0) {
+    return Colors.cyanAccent;
+  } else if (index % 2 == 0) {
+    return Colors.tealAccent;
+  } else {
+    return Colors.orangeAccent;
+  }
+}

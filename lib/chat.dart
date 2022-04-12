@@ -15,27 +15,7 @@ class _ChatPageState extends State<ChatPage> {
     return Scaffold(
       appBar: AppBar(
         leadingWidth: 80,
-        leading: DropdownButton<String>(
-          value: dropdownValue,
-          elevation: 16,
-          style: const TextStyle(color: Colors.pink),
-          underline: Container(
-            height: 2,
-            color: Colors.pinkAccent,
-          ),
-          onChanged: (String? newValue) {
-            setState(() {
-              dropdownValue = newValue!;
-            });
-          },
-          items: <String>['Friend A', 'Friend B', 'Friend C', 'Friend D']
-              .map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            );
-          }).toList(),
-        ),
+        leading: ,
         actions: <Widget>[
           IconButton(
               onPressed: () {

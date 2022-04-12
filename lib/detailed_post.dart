@@ -1,10 +1,10 @@
 part of menuoc;
 
 class DetailedPost extends StatelessWidget {
-  DetailedPost(this.index, this.item, {Key? key}) : super(key: key);
+  DetailedPost(this.index, this.post, {Key? key}) : super(key: key);
 
   final int index;
-  final Post item;
+  final Post post;
   final GlobalKey<CommentListState> _commentKey = GlobalKey();
   final GlobalKey<CommentBoxState> _inputKey = GlobalKey();
 
@@ -12,9 +12,22 @@ class DetailedPost extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
-        title: FittedBox(fit: BoxFit.fitWidth, child: Text(item.title)),
-      ),
+          centerTitle: true,
+          title: FittedBox(fit: BoxFit.fitWidth, child: Text(post.title)),
+          actions: (globals.currentUser.username == post.creator || globals.currentUser.isAdmin)
+              ? <Widget>[
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () {
+                      //TODO: Make popup for editing post content
+                    },
+                  ),
+                  IconButton(icon: const Icon(Icons.delete), onPressed: () {
+                    //TODO:delete post
+                    Navigator.pop(context);
+                  }),
+                ]
+              : []),
       body: Column(
         children: <Widget>[
           Expanded(
@@ -24,27 +37,31 @@ class DetailedPost extends StatelessWidget {
                   color: Colors.grey[50],
                   height: 25,
                   child: FittedBox(
-                    child: Text("by " + item.creator,
+                    child: Text("by " + post.creator,
                         style: const TextStyle(fontSize: 15)),
                   ),
                 ),
+                Tags(postID: post.postId),
                 Container(
                   padding: const EdgeInsets.all(5),
                   color: Colors.pink[50],
                   alignment: Alignment.topLeft,
                   child: Text(
-                    item.content,
+                    post.content,
                     style: const TextStyle(fontSize: 25),
                   ),
                 ),
-                Ratio(
-                    id: item.postId,
+                Container(
+                  color: Colors.pink[50],
+                  child: Ratio(
+                    id: post.postId,
                     isPost: true,
+                  ),
                 ),
                 const SizedBox(
                   height: 10,
                 ),
-                CommentList(key: _commentKey, postID: item.postId),
+                CommentList(key: _commentKey, postID: post.postId),
               ],
             ),
           ),
@@ -63,12 +80,62 @@ class DetailedPost extends StatelessWidget {
                   onPressed: () {
                     //TODO: Add call to post the comment
                     String inputted = _inputKey.currentState!.getComment();
-                    _commentKey.currentState!._commentFetch(item.postId);
+                    _commentKey.currentState!._commentFetch(post.postId);
                   },
                 )
               ])),
         ],
       ),
+    );
+  }
+}
+
+class Tags extends StatefulWidget {
+  final int postID;
+
+  const Tags({Key? key, required this.postID}) : super(key: key);
+
+  @override
+  _TagsState createState() => _TagsState();
+}
+
+class _TagsState extends State<Tags> {
+  List<String> tags = [];
+  bool loading = true;
+
+  Future<void> _tagsFetch(int postID) async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    //TODO: fetch tags by post ID
+    List<String> newData = List.generate(2, (index) => "#$index");
+    tags.addAll(newData);
+    try {
+      setState(() {
+        loading = false;
+      });
+    } on Exception catch (e) {
+      log(e.toString());
+    }
+  }
+
+  @override
+  void initState() {
+    _tagsFetch(widget.postID);
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: loading
+          ? []
+          : List.generate(
+              tags.length,
+              (index) => Row(
+                    children: [
+                      FittedBox(child: Text(tags[index])),
+                      const SizedBox(width: 10)
+                    ],
+                  )),
     );
   }
 }
@@ -83,12 +150,11 @@ class CommentBox extends StatefulWidget {
 class CommentBoxState extends State<CommentBox> {
   final commentController = TextEditingController();
 
-  String getComment(){
-    String text =  commentController.text;
+  String getComment() {
+    String text = commentController.text;
     commentController.clear();
     return text;
   }
-
 
   @override
   void dispose() {
@@ -105,8 +171,8 @@ class CommentBoxState extends State<CommentBox> {
         decoration: const InputDecoration(
           hintText: "Comment",
           border: OutlineInputBorder(
-            // borderRadius:
-            //     BorderRadius.all(Radius.zero(5.0)),
+              // borderRadius:
+              //     BorderRadius.all(Radius.zero(5.0)),
               borderSide: BorderSide(color: Colors.black)),
         ),
       ),
@@ -114,13 +180,12 @@ class CommentBoxState extends State<CommentBox> {
   }
 }
 
-
-
 class Ratio extends StatefulWidget {
   final int id;
   final bool isPost;
 
-  const Ratio({Key? key, required this.id, required this.isPost}) : super(key: key);
+  const Ratio({Key? key, required this.id, required this.isPost})
+      : super(key: key);
 
   @override
   _RatioState createState() => _RatioState();
@@ -134,10 +199,21 @@ class _RatioState extends State<Ratio> {
   Future<void> _fetchRatio(int id, bool isPost) async {
     //TODO: Fetch ratio by id
 
-    await Future.delayed(const Duration(milliseconds: 1000));
+    await Future.delayed(const Duration(milliseconds: 100));
     likes = id;
     dislikes = id;
-    setState(() {});
+
+    try {
+      setState(() {});
+    } on Exception catch (e) {
+      log(e.toString());
+    }
+  }
+
+  @override
+  void dispose() {
+    Future.delayed(const Duration(milliseconds: 100));
+    super.dispose();
   }
 
   @override
@@ -166,7 +242,10 @@ class _RatioState extends State<Ratio> {
             });
           },
         ),
-        Text(likes.toString(), style: const TextStyle(fontSize: 18),),
+        Text(
+          likes.toString(),
+          style: const TextStyle(fontSize: 18),
+        ),
         IconButton(
           icon: (likeState == -1)
               ? const Icon(Icons.thumb_down_alt)
@@ -181,7 +260,10 @@ class _RatioState extends State<Ratio> {
             });
           },
         ),
-        Text(dislikes.toString(), style: const TextStyle(fontSize: 18),)
+        Text(
+          dislikes.toString(),
+          style: const TextStyle(fontSize: 18),
+        )
       ],
     );
   }
@@ -201,14 +283,18 @@ class CommentListState extends State<CommentList> {
   bool loading = true;
 
   Future<void> _commentFetch(int postID) async {
-    await Future.delayed(const Duration(milliseconds: 1000));
-    //TODO: Replace with real http request
+    await Future.delayed(const Duration(milliseconds: 500));
+    //TODO: Fetch Comment using postID
     List<Comment> newData = List.generate(
         10, (index) => Comment("Comment #$index", "User $index", index));
     comments.addAll(newData);
-    setState(() {
-      loading = false;
-    });
+    try {
+      setState(() {
+        loading = false;
+      });
+    } on Exception catch (e) {
+      log(e.toString());
+    }
   }
 
   @override
@@ -220,7 +306,7 @@ class CommentListState extends State<CommentList> {
   @override
   Widget build(BuildContext context) {
     return loading
-        ? const CircularProgressIndicator()
+        ? const Center(child: CircularProgressIndicator())
         : ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -232,16 +318,19 @@ class CommentListState extends State<CommentList> {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(5),
-                    color: Colors.blueGrey[100],
+                    color: Colors.blue[100],
                     alignment: Alignment.topLeft,
                     child: Text(
                       comments[index].user + ": " + comments[index].text,
                       style: const TextStyle(fontSize: 20),
                     ),
                   ),
-                  Ratio(
-                    id: comments[index].commentId,
-                    isPost: true,
+                  Container(
+                    color: Colors.blue[50],
+                    child: Ratio(
+                      id: comments[index].commentId,
+                      isPost: true,
+                    ),
                   ),
                 ],
               );

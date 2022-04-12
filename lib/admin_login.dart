@@ -1,14 +1,14 @@
 part of menuoc;
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+class AdminLoginPage extends StatefulWidget {
+  const AdminLoginPage({Key? key}) : super(key: key);
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _AdminLoginPageState createState() => _AdminLoginPageState();
 }
 
 
-class _LoginPageState extends State<LoginPage> {
+class _AdminLoginPageState extends State<AdminLoginPage> {
   final usernameController = TextEditingController();
   final passWordController = TextEditingController();
 
@@ -35,7 +35,7 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               const Text(
-                "Login",
+                "Admin Login",
                 style: TextStyle(
                   fontSize: 45,
                   color: Colors.pink,
@@ -68,10 +68,9 @@ class _LoginPageState extends State<LoginPage> {
                           //TODO: Add Login API Call
                           setState(() {
                             globals.currentUser.isLoggedIn = true;
-                            globals.currentUser.username = "Creator 0";
+                            globals.currentUser.username = "admin 0";
+                            globals.currentUser.isAdmin = true;
                           });
-
-                          //await storage.write(key: "jwt", value: token);
                           Navigator.pop(context);
                     },
                     child: const Text(
@@ -79,28 +78,6 @@ class _LoginPageState extends State<LoginPage> {
                       style: TextStyle(fontSize: 30, color: Colors.white),
                     )),
               ),
-              TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const RegisterPage()));
-                  },
-                  child: const Text(
-                    "Don't have an account? Register here",
-                    style: TextStyle(fontSize: 15, color: Colors.black),
-                  )),
-              TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const AdminLoginPage())).then((_) => Navigator.pop(context));
-                  },
-                  child: const Text(
-                    "Admin Login",
-                    style: TextStyle(fontSize: 15, color: Colors.black),
-                  )),
             ],
           ),
         ));
