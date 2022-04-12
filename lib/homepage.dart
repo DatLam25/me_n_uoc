@@ -18,11 +18,11 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _pageFetch(int pageKey) async {
     await Future.delayed(const Duration(milliseconds: 1000));
-    //Mock fetch Logic
+    //TODO: Replace with real http request
     List<Post> newData = pageKey >= 100
         ? []
         : List.generate(
-            _pageSize, (index) => Post("Title ${index + pageKey}", loremIpsum, index+pageKey, "Creater ${index + pageKey}"));
+            _pageSize, (index) => Post("Title ${index + pageKey}", loremIpsum, index+pageKey, "Creator ${index + pageKey}"));
 
     final isLastPage = newData.length < _pageSize;
     if(isLastPage) {
@@ -143,7 +143,7 @@ class _HomePageState extends State<HomePage> {
                           alignment: Alignment.topLeft,
                           child: Text(
                             item.title,
-                            style: TextStyle(fontSize: 25),
+                            style: const TextStyle(fontSize: 25),
                           ),
                         ),
                         Container(
@@ -153,7 +153,7 @@ class _HomePageState extends State<HomePage> {
                           alignment: Alignment.topLeft,
                           child: Text(
                             item.content,
-                            style: TextStyle(fontSize: 25),
+                            style: const TextStyle(fontSize: 25),
                           ),
                         ),
                       ],

@@ -1,3 +1,3 @@
-// TODO Implement this library.library globals;
+library globals;
 
 bool isLoggedIn = false;

@@ -13,10 +13,10 @@ part 'homepage.dart';
 part 'login.dart';
 part 'register.dart';
 part 'chat.dart';
-part 'detailedPost.dart';
+part 'detailed_post.dart';
 part 'profile.dart';
 
-final storage = new FlutterSecureStorage();
+const storage =  FlutterSecureStorage();
 Session session = Session();
 
 void main() {
@@ -66,16 +66,9 @@ class Post {
 class Comment{
   String text;
   String user;
-  int totalLike;
+  int commentId;
 
-  Comment(this.text, this.user, this.totalLike);
-}
-
-class PostWithComment extends Post{
-  List<Comment> comments = [];
-  int totalLike;
-
-  PostWithComment(title, content, postId, creator, this.comments, this.totalLike) : super(title, content, postId, creator);
+  Comment(this.text, this.user, this.commentId);
 }
 
 class Session {
