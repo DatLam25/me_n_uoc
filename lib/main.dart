@@ -21,7 +21,6 @@ part 'admin_login.dart';
 part 'admin_page.dart';
 
 const storage =  FlutterSecureStorage();
-Session session = Session();
 
 void main() {
   runApp(const MyApp());
@@ -61,7 +60,7 @@ class MyApp extends StatelessWidget {
 
 class Session {
 
-  Future<Map> put(String path, dynamic data) async{
+  static Future<Map> put(String path, dynamic data) async{
     Map<String, String> headers = {"x-access-token" : "", 'Content-Type': 'application/json'};
     String? jwtToken = await storage.read(key: "jwt");
     if(jwtToken != null){
@@ -73,7 +72,7 @@ class Session {
     return body;
   }
 
-  Future<Map> delete(String path, dynamic data) async{
+  static Future<Map> delete(String path, dynamic data) async{
     Map<String, String> headers = {"x-access-token" : "", 'Content-Type': 'application/json'};
     String? jwtToken = await storage.read(key: "jwt");
     if(jwtToken != null){
@@ -85,7 +84,7 @@ class Session {
     return body;
   }
 
-  Future<Map> get(String path) async {
+  static Future<Map> get(String path) async {
     Map<String, String> headers = {"x-access-token" : "", 'Content-Type': 'application/json'};
     String? jwtToken = await storage.read(key: "jwt");
     if(jwtToken != null){
@@ -97,7 +96,7 @@ class Session {
     return body;
   }
 
-  Future<Map> post(String path, dynamic data) async {
+  static Future<Map> post(String path, dynamic data) async {
     Map<String, String> headers = {"x-access-token" : "", 'Content-Type': 'application/json'};
     String? jwtToken = await storage.read(key: "jwt");
     if(jwtToken != null){
@@ -129,8 +128,9 @@ class Comment{
   String text;
   String user;
   int commentId;
+  int postId;
 
-  Comment(this.text, this.user, this.commentId);
+  Comment(this.text, this.user, this.commentId, this.postId);
 }
 
 class Profile{

@@ -87,7 +87,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         "password": password
                       });
 
-                      Map response = await session.post("/user/register", data);
+                      Map response = await Session.post("/user/register", data);
                       if (response["message"] != "user created.") {
                         setState(() {
                           error = true;

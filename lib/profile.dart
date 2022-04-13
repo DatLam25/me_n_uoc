@@ -16,7 +16,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Profile profile = Profile("", "");
 
   _communitiesFetch() async {
-    Map communityRes = await session.get("/community/");
+    Map communityRes = await Session.get("/community/");
     if (communityRes["code"] == 200) {
       List<String> newCommunity = [];
       for (Map c in communityRes["community"]) {
@@ -25,7 +25,7 @@ class _ProfilePageState extends State<ProfilePage> {
       communities = newCommunity;
     }
 
-    Map communityInRes = await session.get("/user/usercommunities");
+    Map communityInRes = await Session.get("/user/usercommunities");
     if (communityInRes["code"] == 200) {
       List<String> newCommunity = [];
       for (Map c in communityInRes["userCommunities"]) {
@@ -41,7 +41,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _postFetch() async {
-    Map response = await session.get("/post/");
+    Map response = await Session.get("/post/username");
     if (response["code"] == 200) {
       List<Post> newPost = [];
       for (var p in response["posts"]) {
@@ -55,7 +55,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _profileFetch() async {
     await Future.delayed(const Duration(milliseconds: 100));
-    Map response = await session.get("/profile/");
+    Map response = await Session.get("/profile/");
     if (response["code"] == 200 && response["profile"].length > 0) {
       var fetchedProfile = response["profile"][0];
       setState(() {
@@ -138,7 +138,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     "bio": inputtedBio,
                                   });
                                   Map response =
-                                      await session.put("/profile/", data);
+                                      await Session.put("/profile/", data);
                                   if (response["code"] == 200) {
                                     _profileFetch();
                                   }
@@ -249,7 +249,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       var data = json.encode({
                         "community": c,
                       });
-                      await session.post("/user/usercommunities", data);
+                      await Session.post("/user/usercommunities", data);
                     }
                   },
                 );

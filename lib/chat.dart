@@ -10,6 +10,8 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   Chat currentChat = Chat(0, "");
   final chatController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
   List<Chat> chats = [];
   List<Message> messages = [];
   List<String> users = [];
@@ -44,9 +46,9 @@ class _ChatPageState extends State<ChatPage> {
     await Future.delayed(const Duration(milliseconds: 1000));
     //TODO: Add fetch message by user
     List<Message> newData = List.generate(
-        2, (index) => Message(currentChat.user, "What is up? $index"));
+        10, (index) => Message(currentChat.user, "What is up? $index"));
     newData.addAll(List.generate(
-        2,
+        10,
         (index) =>
             Message(globals.currentUser.username, "What is up? $index")));
     setState(() {
@@ -59,13 +61,13 @@ class _ChatPageState extends State<ChatPage> {
     _chatFetch().then((_) => {
           if (chats.isNotEmpty) {_messageFetch()}
         });
-
     super.initState();
   }
 
   @override
   void dispose() {
     chatController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -157,13 +159,13 @@ class _ChatPageState extends State<ChatPage> {
                       color: Colors.black,
                     ))
                   : ListView.separated(
+                      controller: _scrollController,
                       separatorBuilder: (BuildContext context, int index) =>
                           const Divider(),
                       itemCount: messages.length,
                       itemBuilder: (context, index) {
                         bool sendByCurrentUser = messages[index].sender ==
                             globals.currentUser.username;
-
                         return Column(
                           crossAxisAlignment: (sendByCurrentUser)
                               ? CrossAxisAlignment.end
@@ -216,6 +218,7 @@ class _ChatPageState extends State<ChatPage> {
                   color: Colors.black,
                   iconSize: 20.0,
                   onPressed: () {
+                    _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
                     //TODO: Add API call to chat
 
                     setState(() {});

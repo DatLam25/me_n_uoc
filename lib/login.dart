@@ -78,7 +78,7 @@ class _LoginPageState extends State<LoginPage> {
                         "username": username,
                         "password": password
                       });
-                      Map response = await session.post("/user/login", data);
+                      Map response = await Session.post("/user/login", data);
                       if (response["message"] != "Success") {
                         setState(() {
                           wrongCredential = true;

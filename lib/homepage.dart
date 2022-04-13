@@ -12,35 +12,51 @@ class _HomePageState extends State<HomePage> {
   String currentCommunity = "";
   List<Post> posts = [];
 
-  Future<void> _refresh() async{
+  Future<void> _refresh() async {
     await _communityFetch();
     await _postsFetch();
   }
 
   _communityFetch() async {
-    Map response = await session.get("/user/usercommunities");
-    List<String> newData = [];
-    if(response["userCommunities"] != null)
-    {
-      for (var c in response["userCommunities"]) {
-        newData.add(c["community_name"]);
+    if (globals.currentUser.isAdmin) {
+      Map response = await Session.get("/community");
+      List<String> newData = [];
+      if (response["code"] == 200) {
+        for (var c in response["community"]) {
+          newData.add(c["community_name"]);
+        }
       }
+      setState(() {
+        communities = newData;
+        if (communities.isNotEmpty) {
+          currentCommunity = communities[0];
+        } else {
+          currentCommunity = "";
+        }
+      });
+    } else {
+      Map response = await Session.get("/user/usercommunities");
+      List<String> newData = [];
+      if (response["userCommunities"] != null) {
+        for (var c in response["userCommunities"]) {
+          newData.add(c["community_name"]);
+        }
+      }
+      setState(() {
+        communities = newData;
+        if (communities.isNotEmpty) {
+          currentCommunity = communities[0];
+        } else {
+          currentCommunity = "";
+        }
+      });
     }
-    setState(() {
-      communities = newData;
-      if (communities.isNotEmpty) {
-        currentCommunity = communities[0];
-      } else {
-        currentCommunity = "";
-      }
-    });
   }
 
   Future<void> _postsFetch() async {
-    Map response = await session.get("/post/" + currentCommunity);
+    Map response = await Session.get("/post/community/" + currentCommunity);
     List<Post> newData = [];
-    if(response["posts"] != null)
-    {
+    if (response["posts"] != null) {
       for (var p in response["posts"]) {
         Post newPost = Post(p["title"], p["text"], p["post_id"], p["username"]);
         newData.add(newPost);
@@ -49,8 +65,6 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       posts = newData;
     });
-
-
   }
 
   @override
@@ -94,6 +108,19 @@ class _HomePageState extends State<HomePage> {
                       style: TextStyle(color: Colors.black),
                     ),
               actions: [
+                (globals.currentUser.isLoggedIn && !globals.currentUser.isAdmin)
+                    ? IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const ChatPage()));
+                        }, //To Chat Page
+                        tooltip: 'Open Chat',
+                        icon: const Icon(Icons.chat),
+                        color: Colors.pinkAccent,
+                      )
+                    : Container(),
                 globals.currentUser.isLoggedIn
                     ? IconButton(
                         onPressed: () {
@@ -103,7 +130,7 @@ class _HomePageState extends State<HomePage> {
                                     MaterialPageRoute(
                                         builder: (context) =>
                                             const AdminPage()))
-                                .then((_) => setState(() {}));
+                                .then((_) => _refresh());
                           } else {
                             Navigator.push(
                                     context,
@@ -169,68 +196,65 @@ class _HomePageState extends State<HomePage> {
             ),
             SliverList(
                 delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                    return Stack(
-                      children: <Widget>[
-                        Card(
-                          child: Column(
-                            //mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Container(
-                                padding: const EdgeInsets.all(5),
-                                color: randomColor(index),
-                                alignment: Alignment.topLeft,
-                                child: Center(
-                                  child: FittedBox(
-                                    child: Text(
-                                      posts[index].title,
-                                      style: const TextStyle(fontSize: 25),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.all(5),
-                                color: randomColor(index),
-                                height: 140.0,
-                                alignment: Alignment.topLeft,
+              (BuildContext context, int index) {
+                return Stack(
+                  children: <Widget>[
+                    Card(
+                      child: Column(
+                        //mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Container(
+                            padding: const EdgeInsets.all(5),
+                            color: randomColor(index),
+                            alignment: Alignment.topLeft,
+                            child: Center(
+                              child: FittedBox(
                                 child: Text(
-                                  posts[index].content,
+                                  posts[index].title,
                                   style: const TextStyle(fontSize: 25),
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                        Positioned.fill(
-                            child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    Navigator.push(context,
-                                        MaterialPageRoute(builder: (context) {
-                                      return DetailedPost(index, posts[index]);
-                                    })).then((_) => {_postsFetch()});
-                                  }, //Go to the Specific Post Page
-                                )))
-                      ],
-                    );
-                  },
-                  childCount: posts.length,
-                ))
+                          Container(
+                            padding: const EdgeInsets.all(5),
+                            color: randomColor(index),
+                            height: 140.0,
+                            alignment: Alignment.topLeft,
+                            child: Text(
+                              posts[index].content,
+                              style: const TextStyle(fontSize: 25),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Positioned.fill(
+                        child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (context) {
+                                  return DetailedPost(index, posts[index]);
+                                })).then((_) => {_postsFetch()});
+                              }, //Go to the Specific Post Page
+                            )))
+                  ],
+                );
+              },
+              childCount: posts.length,
+            ))
           ],
         ),
         floatingActionButton:
             (globals.currentUser.isLoggedIn && !globals.currentUser.isAdmin)
                 ? FloatingActionButton(
                     onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const ChatPage()));
-                    }, //To Chat Page
-                    tooltip: 'Open Chat',
-                    child: const Icon(Icons.chat),
+                      //TODO: Create Pop up for create new post
+                    },
+                    tooltip: 'Create New post',
+                    child: const Icon(Icons.add),
                     backgroundColor: Colors.pink.shade200,
                   )
                 : null,
