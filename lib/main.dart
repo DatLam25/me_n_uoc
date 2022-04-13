@@ -142,9 +142,10 @@ class Profile{
 
 class Chat{
   int chatID;
+  String title;
   String user;
 
-  Chat(this.chatID, this.user);
+  Chat(this.chatID, this.title, this.user);
 }
 
 class Message{

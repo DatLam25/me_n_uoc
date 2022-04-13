@@ -254,7 +254,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   },
                 );
               });
-        }, //To Chat Page
+        },
         tooltip: 'Add Communities',
         child: const Icon(Icons.add),
         backgroundColor: Colors.pink.shade200,
