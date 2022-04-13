@@ -105,6 +105,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   context: context,
                   builder: (BuildContext context) {
                     return AlertDialog(
+                      title: const Text("Edit Profile"),
                       content: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[

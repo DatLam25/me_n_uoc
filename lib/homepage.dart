@@ -12,6 +12,9 @@ class _HomePageState extends State<HomePage> {
   String currentCommunity = "";
   List<Post> posts = [];
 
+  final titleController = TextEditingController();
+  final textController = TextEditingController();
+
   Future<void> _refresh() async {
     await _communityFetch();
     await _postsFetch();
@@ -76,6 +79,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    titleController.dispose();
+    textController.dispose();
     super.dispose();
   }
 
@@ -252,6 +257,59 @@ class _HomePageState extends State<HomePage> {
                 ? FloatingActionButton(
                     onPressed: () {
                       //TODO: Create Pop up for create new post
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text("Create New Post"),
+                              content: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: TextFormField(
+                                          controller: titleController,
+                                          decoration: const InputDecoration(
+                                            hintText: "Post Title",
+                                            border: OutlineInputBorder(),
+                                          )),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: TextFormField(
+                                          controller: textController,
+                                          decoration: const InputDecoration(
+                                            hintText: "Post Content",
+                                            border: OutlineInputBorder(),
+                                          )),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: ElevatedButton(
+                                        child: const Text("Save"),
+                                        onPressed: () async {
+                                          String title = titleController.text;
+                                          String text = textController.text;
+                                          var data = json.encode({
+                                            "title": title,
+                                            "text": text,
+                                            "community": currentCommunity,
+                                          });
+                                          Map response =
+                                          await Session.post("/post/", data);
+                                          if (response["code"] == 201) {
+                                            titleController.clear();
+                                            textController.clear();
+                                            Navigator.of(context).pop();
+                                            _postsFetch();
+                                          }
+                                        },
+                                      ),
+                                    )
+                                  ]),
+                            );
+                          });
+
                     },
                     tooltip: 'Create New post',
                     child: const Icon(Icons.add),
