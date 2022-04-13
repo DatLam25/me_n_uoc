@@ -8,63 +8,60 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  static const _pageSize = 10;
   List<String> communities = [];
   String currentCommunity = "";
+  List<Post> posts = [];
 
-  String loremIpsum =
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Cursus vitae congue mauris rhoncus aenean vel elit scelerisque. Risus feugiat in ante metus dictum at. Sed euismod nisi porta lorem. Ullamcorper sit amet risus nullam eget felis eget. Vel quam elementum pulvinar etiam non quam. Blandit turpis cursus in hac. Volutpat blandit aliquam etiam erat velit scelerisque in dictum. Neque sodales ut etiam sit. Ultricies integer quis auctor elit sed.";
-
-  final PagingController<int, Post> _pagingController =
-      PagingController(firstPageKey: 0);
+  Future<void> _refresh() async{
+    await _communityFetch();
+    await _postsFetch();
+  }
 
   _communityFetch() async {
-    await Future.delayed(const Duration(milliseconds: 1000));
-    //TODO: Add fetch community by user
-    List<String> newData = List.generate(5, (index) => "Community $index");
+    Map response = await session.get("/user/usercommunities");
+    List<String> newData = [];
+    if(response["userCommunities"] != null)
+    {
+      for (var c in response["userCommunities"]) {
+        newData.add(c["community_name"]);
+      }
+    }
     setState(() {
       communities = newData;
-      currentCommunity = communities[0];
+      if (communities.isNotEmpty) {
+        currentCommunity = communities[0];
+      } else {
+        currentCommunity = "";
+      }
     });
   }
 
-  Future<void> _pageFetch(int pageKey) async {
-    await Future.delayed(const Duration(milliseconds: 1000));
-    //TODO: Fetch Post by Communities
-    List<Post> newData = pageKey >= 100
-        ? []
-        : List.generate(
-            _pageSize,
-            (index) => Post("Title ${index + pageKey}", loremIpsum,
-                index + pageKey, "Creator ${index + pageKey}"));
-
-    final isLastPage = newData.length < _pageSize;
-    if (isLastPage) {
-      _pagingController.appendLastPage(newData);
-    } else {
-      final nextPageKey = pageKey + newData.length;
-      _pagingController.appendPage(newData, nextPageKey);
+  Future<void> _postsFetch() async {
+    Map response = await session.get("/post/" + currentCommunity);
+    List<Post> newData = [];
+    if(response["posts"] != null)
+    {
+      for (var p in response["posts"]) {
+        Post newPost = Post(p["title"], p["text"], p["post_id"], p["username"]);
+        newData.add(newPost);
+      }
     }
-  }
-
-  Future<void> _refresh() async {
     setState(() {
-      _pagingController.refresh();
+      posts = newData;
     });
+
+
   }
 
   @override
   void initState() {
     super.initState();
-    _pagingController.addPageRequestListener((pageKey) {
-      _pageFetch(pageKey);
-    });
     _communityFetch();
+    _postsFetch();
   }
 
   @override
   void dispose() {
-    _pagingController.dispose();
     super.dispose();
   }
 
@@ -125,7 +122,7 @@ class _HomePageState extends State<HomePage> {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => const LoginPage()))
-                              .then((_) => setState(() {}));
+                              .then((_) => _refresh());
                         },
                         icon: const Icon(Icons.login),
                         color: Colors.pinkAccent,
@@ -133,48 +130,46 @@ class _HomePageState extends State<HomePage> {
               ],
               bottom: AppBar(
                 title: communities.isEmpty
-                      ? const Center(child: CircularProgressIndicator())
-                      : DropdownButtonFormField<String>(
-                          decoration: InputDecoration(
-                            enabledBorder: OutlineInputBorder(
-                              borderSide:
-                                  const BorderSide(color: Colors.white, width: 2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            border: OutlineInputBorder(
-                              borderSide:
-                                  const BorderSide(color: Colors.white, width: 2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            filled: true,
-                            fillColor: Colors.white,
+                    ? const Center(child: CircularProgressIndicator())
+                    : DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          enabledBorder: OutlineInputBorder(
+                            borderSide:
+                                const BorderSide(color: Colors.white, width: 2),
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          dropdownColor: Colors.white,
-                          value: currentCommunity,
-                          icon: const Icon(Icons.arrow_downward),
-                          elevation: 16,
-                          style: const TextStyle(color: Colors.black),
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              currentCommunity = newValue!;
-                              _pagingController.refresh();
-                            });
-                          },
-                          items: communities
-                              .map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
+                          border: OutlineInputBorder(
+                            borderSide:
+                                const BorderSide(color: Colors.white, width: 2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          filled: true,
+                          fillColor: Colors.white,
                         ),
-
+                        dropdownColor: Colors.white,
+                        value: currentCommunity,
+                        icon: const Icon(Icons.arrow_downward),
+                        elevation: 16,
+                        style: const TextStyle(color: Colors.black),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            currentCommunity = newValue!;
+                            _postsFetch();
+                          });
+                        },
+                        items: communities
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                      ),
               ),
             ),
-            PagedSliverList<int, Post>(
-                pagingController: _pagingController,
-                builderDelegate: PagedChildBuilderDelegate<Post>(
-                  itemBuilder: (BuildContext context, Post item, int index) {
+            SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
                     return Stack(
                       children: <Widget>[
                         Card(
@@ -186,9 +181,11 @@ class _HomePageState extends State<HomePage> {
                                 color: randomColor(index),
                                 height: 35.0,
                                 alignment: Alignment.topLeft,
-                                child: Text(
-                                  item.title,
-                                  style: const TextStyle(fontSize: 25),
+                                child: Center(
+                                  child: Text(
+                                    posts[index].title,
+                                    style: const TextStyle(fontSize: 25),
+                                  ),
                                 ),
                               ),
                               Container(
@@ -197,7 +194,7 @@ class _HomePageState extends State<HomePage> {
                                 height: 140.0,
                                 alignment: Alignment.topLeft,
                                 child: Text(
-                                  item.content,
+                                  posts[index].content,
                                   style: const TextStyle(fontSize: 25),
                                 ),
                               ),
@@ -211,28 +208,31 @@ class _HomePageState extends State<HomePage> {
                                   onTap: () {
                                     Navigator.push(context,
                                         MaterialPageRoute(builder: (context) {
-                                      return DetailedPost(index, item);
-                                    })).then((_) => setState(() {
-                                          _pagingController.refresh();
-                                        }));
+                                      return DetailedPost(index, posts[index]);
+                                    })).then((_) => {_postsFetch()});
                                   }, //Go to the Specific Post Page
                                 )))
                       ],
                     );
                   },
+                  childCount: posts.length,
                 ))
           ],
         ),
-        floatingActionButton: (globals.currentUser.isLoggedIn && !globals.currentUser.isAdmin) ?
-        FloatingActionButton(
-          onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const ChatPage()));
-          }, //To Chat Page
-          tooltip: 'Open Chat',
-          child: const Icon(Icons.chat),
-          backgroundColor: Colors.pink.shade200,
-        ): null,
+        floatingActionButton:
+            (globals.currentUser.isLoggedIn && !globals.currentUser.isAdmin)
+                ? FloatingActionButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const ChatPage()));
+                    }, //To Chat Page
+                    tooltip: 'Open Chat',
+                    child: const Icon(Icons.chat),
+                    backgroundColor: Colors.pink.shade200,
+                  )
+                : null,
       ),
     );
   }

@@ -25,6 +25,7 @@ Session session = Session();
 
 void main() {
   runApp(const MyApp());
+  storage.deleteAll();
 }
 
 
