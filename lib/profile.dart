@@ -9,6 +9,8 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final bioController = TextEditingController();
+  List<String> communities = [];
+  List<String> communitiesIn = [];
 
   static const _pageSize = 10;
   Profile profile = Profile("", "");
@@ -19,6 +21,17 @@ class _ProfilePageState extends State<ProfilePage> {
 
   String loremIpsum =
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Cursus vitae congue mauris rhoncus aenean vel elit scelerisque. Risus feugiat in ante metus dictum at. Sed euismod nisi porta lorem. Ullamcorper sit amet risus nullam eget felis eget. Vel quam elementum pulvinar etiam non quam. Blandit turpis cursus in hac. Volutpat blandit aliquam etiam erat velit scelerisque in dictum. Neque sodales ut etiam sit. Ultricies integer quis auctor elit sed.";
+
+  _communitiesFetch() async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    //TODO Fetch communities
+    communities = List.generate(5, (index) => "$index");
+    communitiesIn = List.generate(1, (index) => "$index");
+    for (String c in communitiesIn) {
+      communities.remove(c);
+    }
+    setState(() {});
+  }
 
   Future<void> _pageFetch(int pageKey) async {
     await Future.delayed(const Duration(milliseconds: 100));
@@ -54,8 +67,6 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
-
-
   @override
   void initState() {
     super.initState();
@@ -63,6 +74,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _pagingController.addPageRequestListener((pageKey) {
       _pageFetch(pageKey);
     });
+    _communitiesFetch();
   }
 
   @override
@@ -103,11 +115,11 @@ class _ProfilePageState extends State<ProfilePage> {
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: TextFormField(
-                                controller: bioController,
+                                  controller: bioController,
                                   decoration: const InputDecoration(
-                                hintText: "New Bio",
-                                border: OutlineInputBorder(),
-                              )),
+                                    hintText: "New Bio",
+                                    border: OutlineInputBorder(),
+                                  )),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -133,12 +145,11 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: (){
+            onPressed: () async {
               globals.currentUser = globals.CurrentUser(false, "", false);
-              storage.deleteAll();
+              await storage.deleteAll();
               Navigator.pop(context);
             },
-
           )
         ],
       ),
@@ -148,7 +159,8 @@ class _ProfilePageState extends State<ProfilePage> {
             color: Colors.blueGrey[50],
             child: Text(profile.bio, style: const TextStyle(fontSize: 20)),
           ),
-          Text("Posts by ${globals.currentUser.username}", style: const TextStyle(fontSize: 30)),
+          Text("Posts by ${globals.currentUser.username}",
+              style: const TextStyle(fontSize: 30)),
           PagedListView<int, Post>(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -200,6 +212,37 @@ class _ProfilePageState extends State<ProfilePage> {
                 },
               ))
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return MultiSelectDialog(
+                  title: const Text("Select Communities"),
+                  cancelText: const Text(
+                    "CANCEL",
+                    style: TextStyle(color: Colors.black),
+                  ),
+                  confirmText: const Text(
+                    "OK",
+                    style: TextStyle(color: Colors.black),
+                  ),
+                  initialValue: communitiesIn,
+                  items:
+                      communities.map<MultiSelectItem<String>>((String value) {
+                    return MultiSelectItem<String>(value, value);
+                  }).toList(),
+                  onConfirm: (List<String> values) {
+                    //TODO Call API to update communities in
+
+                  },
+                );
+              });
+        }, //To Chat Page
+        tooltip: 'Add Communities',
+        child: const Icon(Icons.add),
+        backgroundColor: Colors.pink.shade200,
       ),
     );
   }
