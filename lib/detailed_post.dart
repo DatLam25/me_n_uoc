@@ -12,22 +12,9 @@ class DetailedPost extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          centerTitle: true,
-          title: FittedBox(fit: BoxFit.fitWidth, child: Text(post.title)),
-          actions: (globals.currentUser.username == post.creator || globals.currentUser.isAdmin)
-              ? <Widget>[
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      //TODO: Make popup for editing post content
-                    },
-                  ),
-                  IconButton(icon: const Icon(Icons.delete), onPressed: () {
-                    //TODO:delete post
-                    Navigator.pop(context);
-                  }),
-                ]
-              : []),
+        centerTitle: true,
+        title: FittedBox(fit: BoxFit.fitWidth, child: Text(post.title)),
+      ),
       body: Column(
         children: <Widget>[
           Expanded(
@@ -41,7 +28,6 @@ class DetailedPost extends StatelessWidget {
                         style: const TextStyle(fontSize: 15)),
                   ),
                 ),
-                Tags(postID: post.postId),
                 Container(
                   padding: const EdgeInsets.all(5),
                   color: Colors.pink[50],
@@ -56,6 +42,7 @@ class DetailedPost extends StatelessWidget {
                   child: Ratio(
                     id: post.postId,
                     isPost: true,
+                    owner: post.creator,
                   ),
                 ),
                 const SizedBox(
@@ -86,56 +73,6 @@ class DetailedPost extends StatelessWidget {
               ])),
         ],
       ),
-    );
-  }
-}
-
-class Tags extends StatefulWidget {
-  final int postID;
-
-  const Tags({Key? key, required this.postID}) : super(key: key);
-
-  @override
-  _TagsState createState() => _TagsState();
-}
-
-class _TagsState extends State<Tags> {
-  List<String> tags = [];
-  bool loading = true;
-
-  Future<void> _tagsFetch(int postID) async {
-    await Future.delayed(const Duration(milliseconds: 100));
-    //TODO: fetch tags by post ID
-    List<String> newData = List.generate(2, (index) => "#$index");
-    tags.addAll(newData);
-    try {
-      setState(() {
-        loading = false;
-      });
-    } on Exception catch (e) {
-      log(e.toString());
-    }
-  }
-
-  @override
-  void initState() {
-    _tagsFetch(widget.postID);
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: loading
-          ? []
-          : List.generate(
-              tags.length,
-              (index) => Row(
-                    children: [
-                      FittedBox(child: Text(tags[index])),
-                      const SizedBox(width: 10)
-                    ],
-                  )),
     );
   }
 }
@@ -182,9 +119,10 @@ class CommentBoxState extends State<CommentBox> {
 
 class Ratio extends StatefulWidget {
   final int id;
+  final String owner;
   final bool isPost;
 
-  const Ratio({Key? key, required this.id, required this.isPost})
+  const Ratio({Key? key, required this.id, required this.isPost, required this.owner})
       : super(key: key);
 
   @override
@@ -192,16 +130,14 @@ class Ratio extends StatefulWidget {
 }
 
 class _RatioState extends State<Ratio> {
-  int likes = 0;
-  int dislikes = 0;
+  int totalLikes = 0;
   int likeState = 0;
 
   Future<void> _fetchRatio(int id, bool isPost) async {
     //TODO: Fetch ratio by id
 
     await Future.delayed(const Duration(milliseconds: 100));
-    likes = id;
-    dislikes = id;
+    totalLikes = id;
 
     try {
       setState(() {});
@@ -224,6 +160,8 @@ class _RatioState extends State<Ratio> {
 
   @override
   Widget build(BuildContext context) {
+    bool isOwner = globals.currentUser.username == widget.owner || globals.currentUser.isAdmin;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -243,7 +181,7 @@ class _RatioState extends State<Ratio> {
           },
         ),
         Text(
-          likes.toString(),
+          totalLikes.toString(),
           style: const TextStyle(fontSize: 18),
         ),
         IconButton(
@@ -260,10 +198,14 @@ class _RatioState extends State<Ratio> {
             });
           },
         ),
-        Text(
-          dislikes.toString(),
-          style: const TextStyle(fontSize: 18),
-        )
+        isOwner ? IconButton(
+          icon: const Icon(Icons.delete),
+          onPressed: () {
+            //TODO:delete content
+
+            Navigator.pop(context);
+          },
+        ) : const SizedBox(width: 50,),
       ],
     );
   }
@@ -282,6 +224,7 @@ class CommentListState extends State<CommentList> {
   List<Comment> comments = [];
   bool loading = true;
 
+  //TODO Add delete comment
   Future<void> _commentFetch(int postID) async {
     await Future.delayed(const Duration(milliseconds: 500));
     //TODO: Fetch Comment using postID
@@ -330,6 +273,7 @@ class CommentListState extends State<CommentList> {
                     child: Ratio(
                       id: comments[index].commentId,
                       isPost: true,
+                      owner: comments[index].user,
                     ),
                   ),
                 ],

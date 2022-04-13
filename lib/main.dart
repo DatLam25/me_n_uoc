@@ -8,6 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'globals.dart' as globals;
 
 part 'homepage.dart';
@@ -57,6 +58,55 @@ class MyApp extends StatelessWidget {
   }
 }
 
+class Session {
+
+  Future<Map> put(String path, dynamic data) async{
+    Map<String, String> headers = {"x-access-token" : "", 'Content-Type': 'application/json'};
+    String? jwtToken = await storage.read(key: "jwt");
+    if(jwtToken != null){
+      headers["x-access-token"] = jwtToken;
+    }
+    http.Response response = await http.put(Uri.parse(globals.url + path) , body: data, headers: headers);
+    return json.decode(response.body);
+  }
+
+  Future<Map> delete(String path, dynamic data) async{
+    Map<String, String> headers = {"x-access-token" : "", 'Content-Type': 'application/json'};
+    String? jwtToken = await storage.read(key: "jwt");
+    if(jwtToken != null){
+      headers["x-access-token"] = jwtToken;
+    }
+    http.Response response = await http.delete(Uri.parse(globals.url + path) , body: data, headers: headers);
+    return json.decode(response.body);
+  }
+
+  Future<Map> get(String path) async {
+    Map<String, String> headers = {"x-access-token" : "", 'Content-Type': 'application/json'};
+    String? jwtToken = await storage.read(key: "jwt");
+    if(jwtToken != null){
+      headers["x-access-token"] = jwtToken;
+    }
+    http.Response response = await http.get(Uri.parse(globals.url + path) , headers: headers);
+    return json.decode(response.body);
+  }
+
+  Future<Map> post(String path, dynamic data) async {
+    Map<String, String> headers = {"x-access-token" : "", 'Content-Type': 'application/json'};
+    String? jwtToken = await storage.read(key: "jwt");
+    if(jwtToken != null){
+      headers["x-access-token"] = jwtToken;
+    }
+
+    http.Response response = await http.post(Uri.parse(globals.url + path) , body: data, headers: headers);
+    String? token = json.decode(response.body)["token"];
+    if (token != null) {
+      await storage.write(key: "jwt", value: token);
+    }
+    return json.decode(response.body);
+  }
+}
+
+
 class Post {
   String title;
   String content;
@@ -81,30 +131,18 @@ class Profile{
   Profile(this.tag, this.bio);
 }
 
+class Chat{
+  int chatID;
+  String user;
 
-class Session {
-  Map<String, String> headers = {};
+  Chat(this.chatID, this.user);
+}
 
-  Future<Map> get(String url) async {
-    http.Response response = await http.get(Uri.parse(url) , headers: headers);
-    updateCookie(response);
-    return jsonDecode(response.body);
-  }
+class Message{
+  String sender;
+  String message;
 
-  Future<Map> post(String url, dynamic data) async {
-    http.Response response = await http.post(Uri.parse(url) , body: data, headers: headers);
-    updateCookie(response);
-    return jsonDecode(response.body);
-  }
-
-  void updateCookie(http.Response response) {
-    String? rawCookie = response.headers['set-cookie'];
-    if (rawCookie != null) {
-      int index = rawCookie.indexOf(';');
-      headers['cookie'] =
-      (index == -1) ? rawCookie : rawCookie.substring(0, index);
-    }
-  }
+  Message(this.sender, this.message);
 }
 
 Color randomColor(index) {

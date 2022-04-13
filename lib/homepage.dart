@@ -90,11 +90,11 @@ class _HomePageState extends State<HomePage> {
               title: globals.currentUser.isAdmin
                   ? const Text(
                       'Admin Home Page',
-                      style: TextStyle(color: Colors.pinkAccent),
+                      style: TextStyle(color: Colors.black),
                     )
                   : const Text(
                       'Home Page',
-                      style: TextStyle(color: Colors.pinkAccent),
+                      style: TextStyle(color: Colors.black),
                     ),
               actions: [
                 globals.currentUser.isLoggedIn
@@ -223,7 +223,8 @@ class _HomePageState extends State<HomePage> {
                 ))
           ],
         ),
-        floatingActionButton: FloatingActionButton(
+        floatingActionButton: (globals.currentUser.isLoggedIn && !globals.currentUser.isAdmin) ?
+        FloatingActionButton(
           onPressed: () {
             Navigator.push(context,
                 MaterialPageRoute(builder: (context) => const ChatPage()));
@@ -231,7 +232,7 @@ class _HomePageState extends State<HomePage> {
           tooltip: 'Open Chat',
           child: const Icon(Icons.chat),
           backgroundColor: Colors.pink.shade200,
-        ),
+        ): null,
       ),
     );
   }

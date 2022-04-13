@@ -7,15 +7,15 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
-
 class _LoginPageState extends State<LoginPage> {
   final usernameController = TextEditingController();
-  final passWordController = TextEditingController();
+  final passwordController = TextEditingController();
+  bool wrongCredential = false;
 
   @override
   void dispose() {
     usernameController.dispose();
-    passWordController.dispose();
+    passwordController.dispose();
     super.dispose();
   }
 
@@ -45,18 +45,20 @@ class _LoginPageState extends State<LoginPage> {
               TextField(
                   controller: usernameController,
                   decoration: const InputDecoration(
-                hintText: "Username",
-                border: OutlineInputBorder(),
-              )),
+                    hintText: "Username",
+                    border: OutlineInputBorder(),
+                  )),
               const SizedBox(height: 10),
               TextField(
-                  controller: passWordController,
+                  controller: passwordController,
                   obscureText: true,
                   decoration: const InputDecoration(
                     hintText: "Password",
                     border: OutlineInputBorder(),
                   )),
               const SizedBox(height: 20),
+              wrongCredential ? const Text("Wrong Credential", style: TextStyle(color: Colors.red, fontSize: 20),) : Container(),
+              const SizedBox(height: 10),
               SizedBox(
                 width: 200,
                 child: TextButton(
@@ -64,15 +66,27 @@ class _LoginPageState extends State<LoginPage> {
                         textStyle: const TextStyle(fontSize: 20),
                         backgroundColor: Colors.black,
                         fixedSize: Size.infinite),
-                    onPressed: () {
-                          //TODO: Add Login API Call
-                          setState(() {
-                            globals.currentUser.isLoggedIn = true;
-                            globals.currentUser.username = "Creator 0";
-                          });
+                    onPressed: () async {
+                      //TODO: Add Login API Call
+                      String username = usernameController.text;
+                      String password = passwordController.text;
+                      var data = json.encode(<String, String>{"username": username, "password": password});
+                      Map response = await session.post("/user/login", data);
 
-                          //await storage.write(key: "jwt", value: token);
-                          Navigator.pop(context);
+                      if (response["message"] != "Success") {
+                        setState(() {
+                          wrongCredential = true;
+                          usernameController.clear();
+                          passwordController.clear();
+                        });
+                      } else {
+                        setState(() {
+                          wrongCredential = false;
+                          globals.currentUser.isLoggedIn = true;
+                          globals.currentUser.username = response["username"];
+                        });
+                        Navigator.pop(context);
+                      }
                     },
                     child: const Text(
                       "Submit",
@@ -93,9 +107,10 @@ class _LoginPageState extends State<LoginPage> {
               TextButton(
                   onPressed: () {
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const AdminLoginPage())).then((_) => Navigator.pop(context));
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const AdminLoginPage()))
+                        .then((_) => Navigator.pop(context));
                   },
                   child: const Text(
                     "Admin Login",
