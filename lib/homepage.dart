@@ -110,7 +110,7 @@ class _HomePageState extends State<HomePage> {
                                     MaterialPageRoute(
                                         builder: (context) =>
                                             const ProfilePage()))
-                                .then((_) => setState(() {}));
+                                .then((_) => _refresh());
                           }
                         },
                         icon: const Icon(Icons.account_circle),
@@ -179,12 +179,13 @@ class _HomePageState extends State<HomePage> {
                               Container(
                                 padding: const EdgeInsets.all(5),
                                 color: randomColor(index),
-                                height: 35.0,
                                 alignment: Alignment.topLeft,
                                 child: Center(
-                                  child: Text(
-                                    posts[index].title,
-                                    style: const TextStyle(fontSize: 25),
+                                  child: FittedBox(
+                                    child: Text(
+                                      posts[index].title,
+                                      style: const TextStyle(fontSize: 25),
+                                    ),
                                   ),
                                 ),
                               ),

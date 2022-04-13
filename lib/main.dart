@@ -68,7 +68,9 @@ class Session {
       headers["x-access-token"] = jwtToken;
     }
     http.Response response = await http.put(Uri.parse(globals.url + path) , body: data, headers: headers);
-    return json.decode(response.body);
+    Map body = json.decode(response.body);
+    body["code"] = response.statusCode;
+    return body;
   }
 
   Future<Map> delete(String path, dynamic data) async{
@@ -78,7 +80,9 @@ class Session {
       headers["x-access-token"] = jwtToken;
     }
     http.Response response = await http.delete(Uri.parse(globals.url + path) , body: data, headers: headers);
-    return json.decode(response.body);
+    Map body = json.decode(response.body);
+    body["code"] = response.statusCode;
+    return body;
   }
 
   Future<Map> get(String path) async {
@@ -88,7 +92,9 @@ class Session {
       headers["x-access-token"] = jwtToken;
     }
     http.Response response = await http.get(Uri.parse(globals.url + path) , headers: headers);
-    return json.decode(response.body);
+    Map body = json.decode(response.body);
+    body["code"] = response.statusCode;
+    return body;
   }
 
   Future<Map> post(String path, dynamic data) async {
@@ -103,7 +109,9 @@ class Session {
     if (token != null) {
       await storage.write(key: "jwt", value: token);
     }
-    return json.decode(response.body);
+    Map body = json.decode(response.body);
+    body["code"] = response.statusCode;
+    return body;
   }
 }
 

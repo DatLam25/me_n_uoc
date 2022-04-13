@@ -9,78 +9,77 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final bioController = TextEditingController();
+  final tagController = TextEditingController();
   List<String> communities = [];
   List<String> communitiesIn = [];
-
-  static const _pageSize = 10;
+  List<Post> posts = [];
   Profile profile = Profile("", "");
 
-  final _formKey = GlobalKey<FormState>();
-  final PagingController<int, Post> _pagingController =
-      PagingController(firstPageKey: 0);
-
-  String loremIpsum =
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Cursus vitae congue mauris rhoncus aenean vel elit scelerisque. Risus feugiat in ante metus dictum at. Sed euismod nisi porta lorem. Ullamcorper sit amet risus nullam eget felis eget. Vel quam elementum pulvinar etiam non quam. Blandit turpis cursus in hac. Volutpat blandit aliquam etiam erat velit scelerisque in dictum. Neque sodales ut etiam sit. Ultricies integer quis auctor elit sed.";
-
   _communitiesFetch() async {
-    await Future.delayed(const Duration(milliseconds: 100));
-    //TODO Fetch communities
-    communities = List.generate(5, (index) => "$index");
-    communitiesIn = List.generate(1, (index) => "$index");
+    Map communityRes = await session.get("/community/");
+    if (communityRes["code"] == 200) {
+      List<String> newCommunity = [];
+      for (Map c in communityRes["community"]) {
+        newCommunity.add(c["community_name"]);
+      }
+      communities = newCommunity;
+    }
+
+    Map communityInRes = await session.get("/user/usercommunities");
+    if (communityInRes["code"] == 200) {
+      List<String> newCommunity = [];
+      for (Map c in communityInRes["userCommunities"]) {
+        newCommunity.add(c["community_name"]);
+      }
+      communitiesIn = newCommunity;
+    }
+
     for (String c in communitiesIn) {
       communities.remove(c);
     }
     setState(() {});
   }
 
-  Future<void> _pageFetch(int pageKey) async {
-    await Future.delayed(const Duration(milliseconds: 100));
-    //TODO: Fetch Post by Username
-    List<Post> newData = pageKey >= 100
-        ? []
-        : List.generate(
-            _pageSize,
-            (index) => Post("Title ${index + pageKey}", loremIpsum,
-                index + pageKey, globals.currentUser.username));
-
-    final isLastPage = newData.length < _pageSize;
-    if (isLastPage) {
-      _pagingController.appendLastPage(newData);
-    } else {
-      final nextPageKey = pageKey + newData.length;
-      _pagingController.appendPage(newData, nextPageKey);
+  Future<void> _postFetch() async {
+    Map response = await session.get("/post/");
+    if (response["code"] == 200) {
+      List<Post> newPost = [];
+      for (var p in response["posts"]) {
+        newPost.add(Post(p["title"], p["text"], p["post_id"], p["username"]));
+      }
+      setState(() {
+        posts = newPost;
+      });
     }
   }
 
-  Future<void> _bioFetch() async {
+  Future<void> _profileFetch() async {
     await Future.delayed(const Duration(milliseconds: 100));
-    //TODO: Fetch Profile by Username
-    Profile userProfile = Profile("testTag", loremIpsum);
-    setState(() {
-      profile = userProfile;
-    });
-  }
-
-  Future<void> _refresh() async {
-    setState(() {
-      _pagingController.refresh();
-    });
+    Map response = await session.get("/profile/");
+    if (response["code"] == 200 && response["profile"].length > 0) {
+      var fetchedProfile = response["profile"][0];
+      setState(() {
+        profile = Profile(fetchedProfile["tag"], fetchedProfile["bio"]);
+      });
+    } else {
+      setState(() {
+        profile = Profile("", "");
+      });
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    _bioFetch();
-    _pagingController.addPageRequestListener((pageKey) {
-      _pageFetch(pageKey);
-    });
+    _profileFetch();
+    _postFetch();
     _communitiesFetch();
   }
 
   @override
   void dispose() {
-    _pagingController.dispose();
     bioController.dispose();
+    tagController.dispose();
     super.dispose();
   }
 
@@ -102,16 +101,22 @@ class _ProfilePageState extends State<ProfilePage> {
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
-              //TODO: Make popup for editing post content
               showDialog(
                   context: context,
                   builder: (BuildContext context) {
                     return AlertDialog(
-                        content: Form(
-                      key: _formKey,
-                      child: Column(
+                      content: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: TextFormField(
+                                  controller: tagController,
+                                  decoration: const InputDecoration(
+                                    hintText: "New Tag",
+                                    border: OutlineInputBorder(),
+                                  )),
+                            ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: TextFormField(
@@ -125,21 +130,27 @@ class _ProfilePageState extends State<ProfilePage> {
                               padding: const EdgeInsets.all(8.0),
                               child: ElevatedButton(
                                 child: const Text("Save"),
-                                onPressed: () {
-                                  //TODO: Call to Update Bio
-                                  if (_formKey.currentState!.validate()) {
-                                    _formKey.currentState!.save();
-                                  }
-                                  setState(() {
-                                    profile.bio = bioController.text;
+                                onPressed: () async {
+                                  String inputtedBio = bioController.text;
+                                  String inputtedTag = tagController.text;
+                                  var data = json.encode({
+                                    "tag": inputtedTag,
+                                    "bio": inputtedBio,
                                   });
+                                  Map response =
+                                      await session.put("/profile/", data);
+                                  if (response["code"] == 200) {
+                                    _profileFetch();
+                                  }
+
                                   bioController.clear();
+                                  tagController.clear();
                                   Navigator.of(context).pop();
                                 },
                               ),
                             )
                           ]),
-                    ));
+                    );
                   });
             },
           ),
@@ -161,56 +172,55 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           Text("Posts by ${globals.currentUser.username}",
               style: const TextStyle(fontSize: 30)),
-          PagedListView<int, Post>(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              pagingController: _pagingController,
-              builderDelegate: PagedChildBuilderDelegate<Post>(
-                itemBuilder: (BuildContext context, Post item, int index) {
-                  return Stack(
-                    children: <Widget>[
-                      Card(
-                        child: Column(
-                          //mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Container(
-                              padding: const EdgeInsets.all(5),
-                              color: randomColor(index),
-                              height: 35.0,
-                              alignment: Alignment.topLeft,
-                              child: Text(
-                                item.title,
-                                style: const TextStyle(fontSize: 25),
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.all(5),
-                              color: randomColor(index),
-                              height: 140.0,
-                              alignment: Alignment.topLeft,
-                              child: Text(
-                                item.content,
-                                style: const TextStyle(fontSize: 25),
-                              ),
-                            ),
-                          ],
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemBuilder: (BuildContext context, int index) {
+              return Stack(
+                children: <Widget>[
+                  Card(
+                    child: Column(
+                      //mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Container(
+                          padding: const EdgeInsets.all(5),
+                          color: randomColor(index),
+                          height: 35.0,
+                          alignment: Alignment.topLeft,
+                          child: Text(
+                            posts[index].title,
+                            style: const TextStyle(fontSize: 25),
+                          ),
                         ),
-                      ),
-                      Positioned.fill(
-                          child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  Navigator.push(context,
-                                      MaterialPageRoute(builder: (context) {
-                                    return DetailedPost(index, item);
-                                  })).then((_) => _refresh());
-                                }, //Go to the Specific Post Page
-                              )))
-                    ],
-                  );
-                },
-              ))
+                        Container(
+                          padding: const EdgeInsets.all(5),
+                          color: randomColor(index),
+                          height: 140.0,
+                          alignment: Alignment.topLeft,
+                          child: Text(
+                            posts[index].content,
+                            style: const TextStyle(fontSize: 25),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Positioned.fill(
+                      child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (context) {
+                                return DetailedPost(index, posts[index]);
+                              })).then((_) => _postFetch());
+                            }, //Go to the Specific Post Page
+                          )))
+                ],
+              );
+            },
+            itemCount: posts.length,
+          )
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -219,7 +229,7 @@ class _ProfilePageState extends State<ProfilePage> {
               context: context,
               builder: (BuildContext context) {
                 return MultiSelectDialog(
-                  title: const Text("Select Communities"),
+                  title: const Text("Select Communities To Join"),
                   cancelText: const Text(
                     "CANCEL",
                     style: TextStyle(color: Colors.black),
@@ -233,9 +243,14 @@ class _ProfilePageState extends State<ProfilePage> {
                       communities.map<MultiSelectItem<String>>((String value) {
                     return MultiSelectItem<String>(value, value);
                   }).toList(),
-                  onConfirm: (List<String> values) {
-                    //TODO Call API to update communities in
-
+                  onConfirm: (List<String> values) async {
+                    for (String c in values)
+                    {
+                      var data = json.encode({
+                        "community": c,
+                      });
+                      await session.post("/user/usercommunities", data);
+                    }
                   },
                 );
               });
