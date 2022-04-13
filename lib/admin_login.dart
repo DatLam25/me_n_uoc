@@ -7,15 +7,15 @@ class AdminLoginPage extends StatefulWidget {
   _AdminLoginPageState createState() => _AdminLoginPageState();
 }
 
-
 class _AdminLoginPageState extends State<AdminLoginPage> {
   final usernameController = TextEditingController();
-  final passWordController = TextEditingController();
+  final passwordController = TextEditingController();
+  bool error = false;
 
   @override
   void dispose() {
     usernameController.dispose();
-    passWordController.dispose();
+    passwordController.dispose();
     super.dispose();
   }
 
@@ -45,18 +45,25 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
               TextField(
                   controller: usernameController,
                   decoration: const InputDecoration(
-                hintText: "Username",
-                border: OutlineInputBorder(),
-              )),
+                    hintText: "Username",
+                    border: OutlineInputBorder(),
+                  )),
               const SizedBox(height: 10),
               TextField(
-                  controller: passWordController,
+                  controller: passwordController,
                   obscureText: true,
                   decoration: const InputDecoration(
                     hintText: "Password",
                     border: OutlineInputBorder(),
                   )),
               const SizedBox(height: 20),
+              error
+                  ? const Text(
+                "Wrong Credential",
+                style: TextStyle(color: Colors.red, fontSize: 20),
+              )
+                  : Container(),
+              const SizedBox(height: 10),
               SizedBox(
                 width: 200,
                 child: TextButton(
@@ -64,14 +71,34 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                         textStyle: const TextStyle(fontSize: 20),
                         backgroundColor: Colors.black,
                         fixedSize: Size.infinite),
-                    onPressed: () {
-                          //TODO: Add Login API Call
-                          setState(() {
-                            globals.currentUser.isLoggedIn = true;
-                            globals.currentUser.username = "admin 0";
-                            globals.currentUser.isAdmin = true;
-                          });
-                          Navigator.pop(context);
+                    onPressed: () async {
+                      //TODO: Add Login API Call
+                      String username = usernameController.text;
+                      String password = passwordController.text;
+                      var data = json
+                          .encode({"username": username, "password": password});
+                      Map response = await session.post("/user/login", data);
+                      if (response["message"] != "Success") {
+                        setState(() {
+                          error = true;
+                          usernameController.clear();
+                          passwordController.clear();
+                        });
+                      } else {
+                        setState(() {
+                          globals.currentUser.isLoggedIn = true;
+                          globals.currentUser.username = response["username"];
+                          globals.currentUser.isAdmin = true;
+                        });
+                        Navigator.pop(context);
+                      }
+
+                      setState(() {
+                        globals.currentUser.isLoggedIn = true;
+                        globals.currentUser.username = "admin 0";
+                        globals.currentUser.isAdmin = true;
+                      });
+                      Navigator.pop(context);
                     },
                     child: const Text(
                       "Submit",

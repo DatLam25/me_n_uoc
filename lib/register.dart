@@ -11,6 +11,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final usernameController = TextEditingController();
   final passWordController = TextEditingController();
   final emailController = TextEditingController();
+  bool error = false;
 
   @override
   void dispose() {
@@ -43,16 +44,16 @@ class _RegisterPageState extends State<RegisterPage> {
               TextField(
                   controller: usernameController,
                   decoration: const InputDecoration(
-                hintText: "Username",
-                border: OutlineInputBorder(),
-              )),
+                    hintText: "Username",
+                    border: OutlineInputBorder(),
+                  )),
               const SizedBox(height: 10),
               TextField(
                   controller: emailController,
                   decoration: const InputDecoration(
-                hintText: "Email",
-                border: OutlineInputBorder(),
-              )),
+                    hintText: "Email",
+                    border: OutlineInputBorder(),
+                  )),
               const SizedBox(height: 10),
               TextField(
                   controller: passWordController,
@@ -62,6 +63,13 @@ class _RegisterPageState extends State<RegisterPage> {
                     border: OutlineInputBorder(),
                   )),
               const SizedBox(height: 20),
+              error
+                  ? const Text(
+                      "Error: Invalid input",
+                      style: TextStyle(color: Colors.red, fontSize: 20),
+                    )
+                  : Container(),
+              const SizedBox(height: 10),
               SizedBox(
                 width: 200,
                 child: TextButton(
@@ -69,9 +77,27 @@ class _RegisterPageState extends State<RegisterPage> {
                         textStyle: const TextStyle(fontSize: 20),
                         backgroundColor: Colors.black,
                         fixedSize: Size.infinite),
-                    onPressed: () {
-                      //TODO: Add register API Call
-                      Navigator.pop(context);
+                    onPressed: () async {
+                      String username = usernameController.text;
+                      String password = passWordController.text;
+                      String email = emailController.text;
+                      var data = json.encode({
+                        "username": username,
+                        "email": email,
+                        "password": password
+                      });
+
+                      Map response = await session.post("/user/register", data);
+                      if (response["message"] != "user created.") {
+                        setState(() {
+                          error = true;
+                          usernameController.clear();
+                          passWordController.clear();
+                          emailController.clear();
+                        });
+                      } else {
+                        Navigator.pop(context);
+                      }
                     },
                     child: const Text(
                       "Submit",

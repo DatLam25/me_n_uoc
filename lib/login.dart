@@ -57,7 +57,12 @@ class _LoginPageState extends State<LoginPage> {
                     border: OutlineInputBorder(),
                   )),
               const SizedBox(height: 20),
-              wrongCredential ? const Text("Wrong Credential", style: TextStyle(color: Colors.red, fontSize: 20),) : Container(),
+              wrongCredential
+                  ? const Text(
+                      "Wrong Credential",
+                      style: TextStyle(color: Colors.red, fontSize: 20),
+                    )
+                  : Container(),
               const SizedBox(height: 10),
               SizedBox(
                 width: 200,
@@ -67,12 +72,13 @@ class _LoginPageState extends State<LoginPage> {
                         backgroundColor: Colors.black,
                         fixedSize: Size.infinite),
                     onPressed: () async {
-                      //TODO: Add Login API Call
                       String username = usernameController.text;
                       String password = passwordController.text;
-                      var data = json.encode(<String, String>{"username": username, "password": password});
+                      var data = json.encode({
+                        "username": username,
+                        "password": password
+                      });
                       Map response = await session.post("/user/login", data);
-
                       if (response["message"] != "Success") {
                         setState(() {
                           wrongCredential = true;
