@@ -3,7 +3,7 @@
     <!-- Required to fetch data from the internet. -->
     <uses-permission android:name="android.permission.INTERNET" />
    <application
-        android:label="menuoc"
+        android:label="Me&#38;UofC"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
 
