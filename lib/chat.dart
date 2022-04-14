@@ -57,6 +57,14 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
+  void _scrollDown() {
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(seconds: 2),
+      curve: Curves.fastOutSlowIn,
+    );
+  }
+
   @override
   void initState() {
     _chatFetch().then((_) => {
@@ -106,7 +114,7 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                   dropdownColor: Colors.white,
                   value: currentChat,
-                  icon: const Icon(Icons.account_box),
+                  icon: const Icon(Icons.arrow_downward),
                   elevation: 16,
                   style: const TextStyle(color: Colors.black),
                   onChanged: (Chat? newValue) {
@@ -256,8 +264,7 @@ class _ChatPageState extends State<ChatPage> {
                       if(message.isEmpty)
                       {
                         _messageFetch();
-                        _scrollController
-                            .jumpTo(_scrollController.position.maxScrollExtent);
+                        _scrollDown();
                       }
                       else
                       {
@@ -267,8 +274,7 @@ class _ChatPageState extends State<ChatPage> {
                         if (res["code"] == 201) {
                           _messageFetch();
                           chatController.clear();
-                          _scrollController
-                              .jumpTo(_scrollController.position.maxScrollExtent);
+                          _scrollDown();
                         }
                       }
                     },
